@@ -1,0 +1,27 @@
+[package]
+name = "docker-registry-explorer"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+axum = { version = "0.8", features = ["macros"] }
+maud = { version = "0", features = ["axum"] }
+tracing = "0"
+tracing-subscriber = "0"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+tower-http = { version = "0", features = ["fs"] }
+reqwest = { version = "0", default-features = false, features = [
+    "json",
+    "charset",
+    "http2",
+    "rustls-tls",
+] }
+anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+joy-error = { git = "https://github.com/sub07/rust-utils", version = "0.3.0", features = [
+    "tracing-crate",
+] }
+
+futures = "0"
+futures-core = "0"
+futures-util = "0"

@@ -1,0 +1,18 @@
+// Project tasks configuration. See https://zed.dev/docs/tasks for documentation.
+//
+// Example:
+[
+  {
+    "label": "run r",
+    "command": "cargo",
+    "args": ["run"],
+    "env": {
+      "LISTEN_ADDR": "localhost",
+      "LISTEN_PORT": "8080",
+      "REGISTRY_URL": "https://registry.mpardo.me",
+      "REGISTRY_USERNAME": "mpardo",
+      "REGISTRY_PASSWORD": "FLFrOK0XZPo1I3",
+      "STATIC_DIR": "static"
+    }
+  }
+]
