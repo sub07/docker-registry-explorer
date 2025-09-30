@@ -1,3 +1,4 @@
+mod auth;
 mod common;
 mod error;
 mod home;

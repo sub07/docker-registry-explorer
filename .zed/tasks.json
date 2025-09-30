@@ -7,12 +7,14 @@
     "command": "cargo",
     "args": ["run"],
     "env": {
-      "LISTEN_ADDR": "localhost",
+      "LISTEN_ADDR": "127.0.0.1",
       "LISTEN_PORT": "8080",
-      "REGISTRY_URL": "https://registry.mpardo.me",
-      "REGISTRY_USERNAME": "mpardo",
-      "REGISTRY_PASSWORD": "FLFrOK0XZPo1I3",
-      "STATIC_DIR": "static"
+      "REGISTRY_URL": "<url>",
+      "REGISTRY_USERNAME": "<registry_username>",
+      "REGISTRY_PASSWORD": "<registry_password>",
+      "STATIC_DIR": "static",
+      "EXPLORER_USERNAME": "<explorer_username>",
+      "EXPLORER_PASSWORD": "<explorer_password>"
     }
   }
 ]

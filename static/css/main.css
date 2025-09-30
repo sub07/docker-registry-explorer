@@ -1,6 +1,14 @@
-table,
-th,
-td {
-    border: 1px solid black;
-    border-collapse: collapse;
+@import url("https://fonts.googleapis.com/css2?family=Inconsolata:wght@200..900&display=swap");
+
+body {
+    font-family: "Inconsolata" !important;
+    font-size: 16px;
+}
+
+header {
+    background-color: #b6e4ff;
+}
+
+.min-content {
+    width: min-content;
 }
