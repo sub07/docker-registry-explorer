@@ -20,15 +20,12 @@ pub mod handler {
             registry_api_client,
             ..
         }): State<AppState>,
-        auth: Option<Authenticated>,
+        _: Authenticated,
     ) -> Result<Markup, Redirect> {
-        if auth.is_none() {
-            return Err(Redirect::to("/auth/login"));
-        }
         let Ok(images) = service::get_images(registry_api_client).await else {
-            return Ok(view::index(&view::error("Could not retrieve images")));
+            return Ok(view::index(view::error("Could not retrieve images")));
         };
-        Ok(view::index(&view::image_table(images)))
+        Ok(view::index(view::image_table(images)))
     }
 }
 
@@ -71,15 +68,9 @@ pub mod view {
 
     use crate::{common, home::dto::Image};
 
-    pub fn index(body: &Markup) -> Markup {
+    pub fn index(body: Markup) -> Markup {
         html! {
-            html {
-                (common::view::head())
-                body {
-                    (common::view::header())
-                    (body)
-                }
-            }
+            (common::view::page(body))
         }
     }
 

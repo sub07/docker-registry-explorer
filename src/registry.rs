@@ -4,7 +4,10 @@ pub mod api {
     use anyhow::anyhow;
     use serde::de::DeserializeOwned;
 
-    use crate::registry::dto::{CatalogResponse, ManifestBlob, TagManifest, TagsResponse};
+    use crate::{
+        common,
+        registry::dto::{CatalogResponse, ManifestBlob, TagManifest, TagsResponse},
+    };
 
     #[derive(Clone, Debug)]
     pub struct Client {
@@ -19,7 +22,7 @@ pub mod api {
             let client = reqwest::Client::builder()
                 .user_agent(format!(
                     "Docker Registry Explorer v{}",
-                    env!("CARGO_PKG_VERSION")
+                    common::service::APP_VERSION
                 ))
                 .build()?;
 

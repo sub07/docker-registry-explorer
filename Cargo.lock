@@ -282,12 +282,13 @@ dependencies = [
 
 [[package]]
 name = "docker-registry-explorer"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "axum",
  "axum-extra",
  "chrono",
+ "easy-ext 1.0.2",
  "futures",
  "joy-error",
  "joy-macro",
@@ -308,6 +309,12 @@ name = "easy-ext"
 version = "0.2.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "53aff6fdc1b181225acdcb5b14c47106726fd8e486707315b1b138baed68ee31"
+
+[[package]]
+name = "easy-ext"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cc5d6d6a8504f8caedd7de14576464383900cd3840b7033a7a3dce5ac00121ca"
 
 [[package]]
 name = "either"
@@ -812,7 +819,7 @@ name = "joy-error"
 version = "0.3.0"
 source = "git+https://github.com/sub07/rust-utils#1326941a26f4d2717490d282630c3e73e175a943"
 dependencies = [
- "easy-ext",
+ "easy-ext 0.2.9",
  "tracing",
 ]
 

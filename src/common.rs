@@ -41,6 +41,14 @@ pub mod handler {
 }
 
 pub mod service {
+    pub const APP_VERSION: &str = const {
+        if cfg!(debug_assertions) {
+            concat!("dev build based on v", env!("CARGO_PKG_VERSION"))
+        } else {
+            concat!("v", env!("CARGO_PKG_VERSION"))
+        }
+    };
+
     /// Pagination struct
     ///
     /// `page` is 0 indexed
@@ -123,6 +131,8 @@ pub mod service {
 pub mod view {
     use maud::{Markup, html};
 
+    use crate::common::service;
+
     pub fn head() -> Markup {
         html! {
             head {
@@ -142,6 +152,30 @@ pub mod view {
                 form .m-0 method="post" action="/auth/logout" {
                      button .btn .btn-primary type="submit" { "Logout" }
                 }
+            }
+        }
+    }
+
+    pub fn footer() -> Markup {
+        html! {
+            footer .d-flex .justify-content-center .align-items-center .py-2 .px-2 .mx-2 .border-top {
+                p .m-0 { "Docker Registry Explorer \u{B7} " (format!("{}", service::APP_VERSION)) }
+            }
+        }
+    }
+
+    #[allow(clippy::needless_pass_by_value)]
+    pub fn page(content: Markup) -> Markup {
+        html! {
+            html {
+                (head())
+            }
+            body .d-flex .flex-column .min-vh-100 {
+                (header())
+                main .flex-fill {
+                    (content)
+                }
+                (footer())
             }
         }
     }

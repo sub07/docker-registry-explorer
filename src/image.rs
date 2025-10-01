@@ -105,7 +105,7 @@ pub mod service {
         pagination: PaginationQuery,
     ) -> ServiceResult<ImageInfo> {
         let tags = get_image_tags(&registry_api_client, image_name).await?;
-        let tags = pagination.into_paginated(10, &tags)?;
+        let tags = pagination.into_paginated(15, &tags)?;
         let tags = tags
             .map(|tag| async {
                 let digest_response = registry_api_client.digest(image_name, &tag).await?;
@@ -150,62 +150,57 @@ pub mod view {
     };
 
     pub fn index(image_name: &str, info: &ImageInfo) -> Markup {
-        html! {
-            html {
-                (common::view::head())
-                body {
-                    (common::view::header())
-                    .d-flex .justify-content-between .m-2 {
-                        .d-flex .align-items-center .gap-3 {
-                            a .text-decoration-none href="/" { h1 { "<" } }
-                            h1 { (image_name) " image tags" }
-                        }
-                        @if !info.tags.is_empty() && info.tags.need_pagination() {
-                            .d-flex .justify-content-end {
-                                (pagination_fragment(&info.tags, &format!("/{image_name}")))
-                            }
+        const LEFT_ARROW: &str = "\u{1F850}";
+        common::view::page(html! {
+            .d-flex .justify-content-between .m-2 {
+                .d-flex .align-items-center .gap-3 {
+                    a .text-decoration-none href="/" { .fs-1 { (LEFT_ARROW) } }
+                    h1 { (image_name) " image tags" }
+                }
+                @if !info.tags.is_empty() && info.tags.need_pagination() {
+                    .d-flex .justify-content-end {
+                        (pagination_fragment(&info.tags, &format!("/{image_name}")))
+                    }
+                }
+            }
+
+            @if info.tags.is_empty() {
+                p { "No tags found." }
+            } @else {
+
+                table .table .table-striped .table-bordered .table-hover .table-responsive .m-0 .align-middle .text-center {
+                    thead {
+                        tr {
+                            th { "Creation Date" }
+                            th { "Tag" }
+                            th { "Digest" }
+                            th { "Architecture" }
+                            th { "Action" }
                         }
                     }
-
-                    @if info.tags.is_empty() {
-                        p { "No tags found." }
-                    } @else {
-
-                        table .table .table-striped .table-bordered .table-hover .table-responsive .m-0 .align-middle .text-center {
-                            thead {
-                                tr {
-                                    th { "Creation Date" }
-                                    th { "Tag" }
-                                    th { "Digest" }
-                                    th { "Architecture" }
-                                    th { "Action" }
-                                }
-                            }
-                            tbody {
-                                @for tag in info.tags.iter() {
-                                    tr {
-                                        td { (tag.created.map(|date| format!("{}", date.format("%Y-%m-%d %H:%M:%S"))).as_deref().unwrap_or("?")) " (" (tag.created_since.map(format_duration).as_deref().unwrap_or("?")) " ago)"}
-                                        td { (tag.name) }
-                                        td .text-danger[tag.error] { (tag.digest) }
-                                        td { (tag.architecture.as_deref().unwrap_or("?")) }
-                                        td {
-                                            form .m-0 method="post" action=(format!("/{image_name}/delete/{}", tag.digest)) {
-                                                button .btn .btn-danger type="submit" { "Delete" }
-                                            }
-                                        }
+                    tbody {
+                        @for tag in info.tags.iter() {
+                            tr {
+                                td { (tag.created.map(|date| format!("{}", date.format("%Y-%m-%d %H:%M:%S"))).as_deref().unwrap_or("?")) " (" (tag.created_since.map(format_duration).as_deref().unwrap_or("?")) " ago)"}
+                                td { (tag.name) }
+                                td .text-danger[tag.error] { (tag.digest) }
+                                td { (tag.architecture.as_deref().unwrap_or("?")) }
+                                td {
+                                    form .m-0 method="post" action=(format!("/{image_name}/delete/{}", tag.digest)) {
+                                        button .btn .btn-danger type="submit" { "Delete" }
                                     }
                                 }
                             }
                         }
-                        @if info.tags.need_pagination() {
-                            .d-flex .justify-content-end .mx-2 {
-                                (pagination_fragment(&info.tags, &format!("/{image_name}")))
-                            }
-                        }
+                    }
+                }
+                @if info.tags.need_pagination() {
+                    .d-flex .justify-content-end .mx-2 {
+                        (pagination_fragment(&info.tags, &format!("/{image_name}")))
                     }
                 }
             }
-        }
+        })
     }
 
     fn pagination_fragment<T>(pagination: &Paginated<T>, prefix: &str) -> Markup {
