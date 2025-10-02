@@ -101,7 +101,8 @@ pub mod handler {
             (
                 cookie_jar,
                 Redirect::to(&format!(
-                    "/auth/login?error=invalid_credentials&username={username}"
+                    "/auth/login?error=invalid_credentials&username={username}{}",
+                    from.map_or(String::new(), |from| format!("&from={from}"))
                 )),
             )
         }
