@@ -70,7 +70,7 @@ pub mod view {
 
     pub fn index(body: Markup) -> Markup {
         html! {
-            (common::view::page(body))
+            (common::view::page().content(body).call())
         }
     }
 

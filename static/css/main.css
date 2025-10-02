@@ -12,3 +12,11 @@ header {
 .min-content {
     width: min-content;
 }
+
+.copy-button {
+    text-align: center;
+
+    hover {
+        filter: hue-rotate(90deg);
+    }
+}

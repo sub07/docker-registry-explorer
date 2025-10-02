@@ -1,6 +1,6 @@
 [package]
 name = "docker-registry-explorer"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 
 [dependencies]
@@ -29,3 +29,4 @@ axum-extra = { version = "0", features = ["cookie"] }
 sha2 = "0"
 time = "0"
 easy-ext = "1"
+bon = "3"

@@ -9,7 +9,7 @@
     "env": {
       "LISTEN_ADDR": "127.0.0.1",
       "LISTEN_PORT": "8080",
-      "REGISTRY_URL": "https://dev.registry.mpardo.me",
+      "REGISTRY_HOST": "dev.registry.mpardo.me",
       "REGISTRY_USERNAME": "dev",
       "REGISTRY_PASSWORD": "password",
       "STATIC_DIR": "static",

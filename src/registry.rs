@@ -13,12 +13,16 @@ pub mod api {
     pub struct Client {
         inner: reqwest::Client,
         base_url: String,
-        username: String,
-        password: String,
+        username: &'static str,
+        password: &'static str,
     }
 
     impl Client {
-        pub fn new(registry_url: &str, username: String, password: String) -> anyhow::Result<Self> {
+        pub fn new(
+            registry_host: &str,
+            username: &'static str,
+            password: &'static str,
+        ) -> anyhow::Result<Self> {
             let client = reqwest::Client::builder()
                 .user_agent(format!(
                     "Docker Registry Explorer v{}",
@@ -28,7 +32,7 @@ pub mod api {
 
             Ok(Self {
                 inner: client,
-                base_url: format!("{registry_url}/v2"),
+                base_url: format!("https://{registry_host}/v2"),
                 username,
                 password,
             })
@@ -43,7 +47,7 @@ pub mod api {
                 .inner
                 .request(method, format!("{}/{path}", self.base_url))
                 .header("accept", "application/vnd.docker.distribution.manifest.v2+json, application/vnd.oci.image.manifest.v1+json, application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json")
-                .basic_auth(self.username.clone(), Some(self.password.clone()))
+                .basic_auth(self.username, Some(self.password))
                 .send()
                 .await?
                 .json()
@@ -68,7 +72,7 @@ pub mod api {
             let response = self
                 .inner
                 .get(format!("{}/{image}/manifests/{tag}", self.base_url))
-                .basic_auth(self.username.clone(), Some(self.password.clone()))
+                .basic_auth(self.username, Some(self.password))
                 .header("accept", "application/vnd.docker.distribution.manifest.v2+json, application/vnd.oci.image.manifest.v1+json, application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json")
                 .send()
                 .await?;
@@ -92,7 +96,7 @@ pub mod api {
                     .inner
                     .get(format!("{}/{image}/blobs/{config_digest}", self.base_url))
                     .header("accept", "application/vnd.docker.distribution.manifest.v2+json, application/vnd.oci.image.manifest.v1+json, application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json")
-                    .basic_auth(self.username.clone(), Some(self.password.clone()))
+                    .basic_auth(self.username, Some(self.password))
                     .send()
                     .await?.json::<ManifestBlob>().await?;
                 let created = chrono::DateTime::parse_from_rfc3339(&blob.created)?.to_utc();
@@ -124,7 +128,7 @@ pub mod api {
         pub async fn delete_tag(&self, image: &str, digest: &str) -> anyhow::Result<()> {
             self.inner
                 .delete(format!("{}/{image}/manifests/{digest}", self.base_url))
-                .basic_auth(self.username.clone(), Some(self.password.clone()))
+                .basic_auth(self.username, Some(self.password))
                 .send()
                 .await?
                 .error_for_status()?;

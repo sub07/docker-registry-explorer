@@ -151,7 +151,11 @@ pub mod view {
 
     pub fn index(image_name: &str, info: &ImageInfo) -> Markup {
         const LEFT_ARROW: &str = "\u{1F850}";
-        common::view::page(html! {
+        const CLIPBOARD: &str = "\u{1F4CB}";
+
+        let registry_host = common::service::env::registry_host();
+
+        common::view::page().js("clipboard").content(html! {
             .d-flex .justify-content-between .m-2 {
                 .d-flex .align-items-center .gap-3 {
                     a .text-decoration-none href="/" { .fs-1 { (LEFT_ARROW) } }
@@ -182,7 +186,12 @@ pub mod view {
                         @for tag in info.tags.iter() {
                             tr {
                                 td { (tag.created.map(|date| format!("{}", date.format("%Y-%m-%d %H:%M:%S"))).as_deref().unwrap_or("?")) " (" (tag.created_since.map(format_duration).as_deref().unwrap_or("?")) " ago)"}
-                                td { (tag.name) }
+                                td {
+                                    .d-flex .gap-2 .align-items-center .justify-content-around {
+                                        (tag.name)
+                                        .copy-button role="button" onclick="copyToClipboard(this)" data-image=(format!("{registry_host}/{image_name}:{}", tag.name)) { (CLIPBOARD) }
+                                    }
+                                }
                                 td .text-danger[tag.error] { (tag.digest) }
                                 td { (tag.architecture.as_deref().unwrap_or("?")) }
                                 td {
@@ -200,7 +209,7 @@ pub mod view {
                     }
                 }
             }
-        })
+        }).call()
     }
 
     fn pagination_fragment<T>(pagination: &Paginated<T>, prefix: &str) -> Markup {

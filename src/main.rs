@@ -20,16 +20,19 @@ pub struct AppState {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt().init();
+    common::service::env::check();
 
-    let registry_url = env::var("REGISTRY_URL").expect("REGISTRY_URL");
-    let registry_username = env::var("REGISTRY_USERNAME").expect("REGISTRY_USERNAME");
-    let registry_password = env::var("REGISTRY_PASSWORD").expect("REGISTRY_PASSWORD");
+    info!("Registry Host: {}", common::service::env::registry_host());
+    info!(
+        "Registry Username: {}",
+        common::service::env::registry_username()
+    );
 
-    info!("Registry URL: {registry_url}");
-    info!("Registry Username: {registry_username}");
-
-    let registry_api_client =
-        registry::api::Client::new(&registry_url, registry_username, registry_password)?;
+    let registry_api_client = registry::api::Client::new(
+        common::service::env::registry_host(),
+        common::service::env::registry_username(),
+        common::service::env::registry_password(),
+    )?;
 
     let app_state = AppState {
         registry_api_client,

@@ -41,6 +41,8 @@ pub mod handler {
 }
 
 pub mod service {
+    use std::sync::LazyLock;
+
     pub const APP_VERSION: &str = const {
         if cfg!(debug_assertions) {
             concat!("dev build based on v", env!("CARGO_PKG_VERSION"))
@@ -48,6 +50,80 @@ pub mod service {
             concat!("v", env!("CARGO_PKG_VERSION"))
         }
     };
+
+    static REGISTRY_HOST: LazyLock<String> =
+        LazyLock::new(|| std::env::var("REGISTRY_HOST").expect("REGISTRY_HOST"));
+
+    static REGISTRY_USERNAME: LazyLock<String> =
+        LazyLock::new(|| std::env::var("REGISTRY_USERNAME").expect("REGISTRY_USERNAME"));
+
+    static REGISTRY_PASSWORD: LazyLock<String> =
+        LazyLock::new(|| std::env::var("REGISTRY_PASSWORD").expect("REGISTRY_PASSWORD"));
+
+    static LISTEN_ADDR: LazyLock<String> =
+        LazyLock::new(|| std::env::var("LISTEN_ADDR").expect("LISTEN_ADDR"));
+
+    static LISTEN_PORT: LazyLock<String> =
+        LazyLock::new(|| std::env::var("LISTEN_PORT").expect("LISTEN_PORT"));
+
+    static STATIC_DIR: LazyLock<String> =
+        LazyLock::new(|| std::env::var("STATIC_DIR").expect("STATIC_DIR"));
+
+    static EXPLORER_USERNAME: LazyLock<String> =
+        LazyLock::new(|| std::env::var("EXPLORER_USERNAME").expect("EXPLORER_USERNAME"));
+
+    static EXPLORER_PASSWORD: LazyLock<String> =
+        LazyLock::new(|| std::env::var("EXPLORER_PASSWORD").expect("EXPLORER_PASSWORD"));
+
+    pub mod env {
+        use super::{
+            EXPLORER_PASSWORD, EXPLORER_USERNAME, LISTEN_ADDR, LISTEN_PORT, REGISTRY_HOST,
+            REGISTRY_PASSWORD, REGISTRY_USERNAME, STATIC_DIR,
+        };
+
+        pub fn registry_host() -> &'static str {
+            &REGISTRY_HOST
+        }
+
+        pub fn registry_username() -> &'static str {
+            &REGISTRY_USERNAME
+        }
+
+        pub fn registry_password() -> &'static str {
+            &REGISTRY_PASSWORD
+        }
+
+        pub fn listen_addr() -> &'static str {
+            &LISTEN_ADDR
+        }
+
+        pub fn listen_port() -> &'static str {
+            &LISTEN_PORT
+        }
+
+        pub fn static_dir() -> &'static str {
+            &STATIC_DIR
+        }
+
+        pub fn explorer_username() -> &'static str {
+            &EXPLORER_USERNAME
+        }
+
+        pub fn explorer_password() -> &'static str {
+            &EXPLORER_PASSWORD
+        }
+
+        pub fn check() {
+            let _ = registry_host();
+            let _ = registry_username();
+            let _ = registry_password();
+            let _ = listen_addr();
+            let _ = listen_port();
+            let _ = static_dir();
+            let _ = explorer_username();
+            let _ = explorer_password();
+        }
+    }
 
     /// Pagination struct
     ///
@@ -133,7 +209,7 @@ pub mod view {
 
     use crate::common::service;
 
-    pub fn head() -> Markup {
+    pub fn head_with_extra(js: Vec<&'static str>, css: Vec<&'static str>) -> Markup {
         html! {
             head {
                 title { "Docker Registry Explorer" }
@@ -141,8 +217,18 @@ pub mod view {
                 meta name="viewport" content="width=device-width, initial-scale=1";
                 link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous";
                 link rel="stylesheet" href="/static/css/main.css";
+                @for css in css {
+                    link rel="stylesheet" href=(format!("/static/css/{css}.css"));
+                }
+                @for js in js {
+                    script defer src=(format!("/static/js/{js}.js")) {}
+                }
             }
         }
+    }
+
+    pub fn head() -> Markup {
+        head_with_extra(vec![], vec![])
     }
 
     pub fn header() -> Markup {
@@ -164,11 +250,29 @@ pub mod view {
         }
     }
 
+    impl<S: page_builder::State> PageBuilder<S> {
+        pub fn js(mut self, value: &'static str) -> Self {
+            self.js.push(value);
+            self
+        }
+
+        #[allow(dead_code)]
+        pub fn css(mut self, value: &'static str) -> Self {
+            self.css.push(value);
+            self
+        }
+    }
+
+    #[bon::builder]
     #[allow(clippy::needless_pass_by_value)]
-    pub fn page(content: Markup) -> Markup {
+    pub fn page(
+        #[builder(field)] js: Vec<&'static str>,
+        #[builder(field)] css: Vec<&'static str>,
+        content: Markup,
+    ) -> Markup {
         html! {
             html {
-                (head())
+                (head_with_extra(js, css))
             }
             body .d-flex .flex-column .min-vh-100 {
                 (header())
