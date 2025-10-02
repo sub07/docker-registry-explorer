@@ -27,6 +27,7 @@ pub mod handler {
 
     use crate::{
         AppState,
+        auth::middleware::Authenticated,
         common::handler::PaginationQuery,
         image::{service, view},
     };
@@ -38,6 +39,7 @@ pub mod handler {
             registry_api_client,
             ..
         }): State<AppState>,
+        _: Authenticated,
     ) -> Result<Markup, Redirect> {
         service::get_image_info(registry_api_client, &image_name, pagination)
             .await
