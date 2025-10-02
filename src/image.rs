@@ -187,7 +187,7 @@ pub mod view {
                             tr {
                                 td { (tag.created.map(|date| format!("{}", date.format("%Y-%m-%d %H:%M:%S"))).as_deref().unwrap_or("?")) " (" (tag.created_since.map(format_duration).as_deref().unwrap_or("?")) " ago)"}
                                 td {
-                                    .d-flex .gap-2 .align-items-center .justify-content-around {
+                                    .d-flex .align-items-center .justify-content-between {
                                         (tag.name)
                                         .copy-button role="button" onclick="copyToClipboard(this)" data-image=(format!("{registry_host}/{image_name}:{}", tag.name)) { (CLIPBOARD) }
                                     }
