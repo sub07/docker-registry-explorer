@@ -6,7 +6,10 @@ pub mod dto {
 }
 
 pub mod handler {
-    use axum::{extract::State, response::Redirect};
+    use axum::{
+        extract::{Path, State},
+        response::Redirect,
+    };
     use maud::Markup;
 
     use crate::{
@@ -27,12 +30,55 @@ pub mod handler {
         };
         Ok(view::index(view::image_table(images)))
     }
+
+    pub async fn delete_all_image_tags(
+        State(AppState {
+            registry_api_client,
+            ..
+        }): State<AppState>,
+        _: Authenticated,
+        Path(image_name): Path<String>,
+    ) -> Redirect {
+        let _ = service::delete_all_image_tags(registry_api_client, &image_name).await;
+        Redirect::to("/")
+    }
 }
 
 pub mod service {
+    use itertools::Itertools;
     use joy_error::ResultLogExt;
 
-    use crate::{error::service::ServiceResult, home::dto::Image, registry};
+    use crate::{
+        error::service::ServiceResult,
+        home::dto::Image,
+        registry::{self, dto::TagManifest},
+    };
+
+    pub async fn delete_all_image_tags(
+        registry_api_client: registry::api::Client,
+        image_name: &str,
+    ) -> ServiceResult<()> {
+        let tags = registry_api_client.tags(image_name).await.log_err()?;
+        if let Some(tags) = tags.tags {
+            let digests = futures::future::join_all(
+                tags.iter()
+                    .map(|tag| registry_api_client.manifest(image_name, tag)),
+            )
+            .await
+            .into_iter()
+            .collect::<Result<Vec<TagManifest>, _>>()?
+            .into_iter()
+            .map(|m| m.digest().to_owned())
+            .unique();
+            for digest in digests {
+                registry_api_client
+                    .delete_tag(image_name, &digest)
+                    .await
+                    .log_err()?;
+            }
+        }
+        Ok(())
+    }
 
     #[tracing::instrument]
     pub async fn get_images(
@@ -84,11 +130,12 @@ pub mod view {
 
     pub fn image_table(images: Vec<Image>) -> Markup {
         html! {
-            table .table .table-striped .table-bordered .table-hover .table-responsive {
+            table .table .table-striped .table-bordered .table-hover .table-responsive .align-middle .text-center {
                 thead {
                     tr {
                         th { "Image Name" }
                         th { "Tag Count" }
+                        th { "Action" }
                     }
                 }
                 tbody {
@@ -97,6 +144,13 @@ pub mod view {
                             tr {
                                 td { a href=(image.name) { (image.name) } }
                                 td { (image.tag_count) }
+                                td {
+                                    form action=(format!("{}/delete", image.name)) method="post" .m-0 {
+                                        button .btn .btn-danger type="submit" {
+                                            "Delete"
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

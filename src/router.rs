@@ -15,6 +15,10 @@ pub fn create_router() -> Router<AppState> {
     Router::new()
         .route("/", get(home::handler::index))
         .route("/{image}", get(image::handler::index))
+        .route(
+            "/{image}/delete",
+            post(home::handler::delete_all_image_tags),
+        )
         .route("/{image}/delete/{digest}", post(image::handler::delete_tag))
         .route(
             "/favicon.ico",

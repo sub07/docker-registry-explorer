@@ -3,6 +3,7 @@ pub mod api {
 
     use anyhow::anyhow;
     use serde::de::DeserializeOwned;
+    use tracing::{info, instrument};
 
     use crate::{
         common,
@@ -58,17 +59,20 @@ pub mod api {
             self.make_request(reqwest::Method::GET, "_catalog").await
         }
 
+        #[instrument(skip(self))]
         pub async fn count_tags(&self, image: &str) -> anyhow::Result<usize> {
             let tags = self.tags(image).await?;
             Ok(tags.tags.map_or(0, |tags| tags.len()))
         }
 
+        #[instrument(skip(self))]
         pub async fn tags(&self, image: &str) -> anyhow::Result<TagsResponse> {
             self.make_request(reqwest::Method::GET, &format!("{image}/tags/list"))
                 .await
         }
 
-        pub async fn digest(&self, image: &str, tag: &str) -> anyhow::Result<TagManifest> {
+        #[instrument(skip(self))]
+        pub async fn manifest(&self, image: &str, tag: &str) -> anyhow::Result<TagManifest> {
             let response = self
                 .inner
                 .get(format!("{}/{image}/manifests/{tag}", self.base_url))
@@ -125,7 +129,9 @@ pub mod api {
             }
         }
 
+        #[instrument(skip(self))]
         pub async fn delete_tag(&self, image: &str, digest: &str) -> anyhow::Result<()> {
+            info!("Calling delete tag request");
             self.inner
                 .delete(format!("{}/{image}/manifests/{digest}", self.base_url))
                 .basic_auth(self.username, Some(self.password))
@@ -160,6 +166,14 @@ pub mod dto {
         Error {
             digest: String,
         },
+    }
+
+    impl TagManifest {
+        pub fn digest(&self) -> &str {
+            match self {
+                Self::Nominal { digest, .. } | Self::Error { digest } => digest,
+            }
+        }
     }
 
     #[derive(Deserialize)]

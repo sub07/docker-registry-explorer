@@ -14,7 +14,8 @@
       "REGISTRY_PASSWORD": "password",
       "STATIC_DIR": "static",
       "EXPLORER_USERNAME": "mpardo",
-      "EXPLORER_PASSWORD": "password"
+      "EXPLORER_PASSWORD": "password",
+      "RUST_LOG": "debug"
     }
   }
 ]

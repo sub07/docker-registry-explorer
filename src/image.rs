@@ -110,7 +110,7 @@ pub mod service {
         let tags = pagination.into_paginated(15, &tags)?;
         let tags = tags
             .map(|tag| async {
-                let digest_response = registry_api_client.digest(image_name, &tag).await?;
+                let digest_response = registry_api_client.manifest(image_name, &tag).await?;
                 let tag = match digest_response {
                     registry::dto::TagManifest::Nominal {
                         digest,
