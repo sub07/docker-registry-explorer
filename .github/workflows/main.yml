@@ -1,6 +1,6 @@
 on: push
 env:
-  BASE_IMAGE_NAME: registry.mpardo.me/docker-registry-explorer
+  BASE_IMAGE_NAME: registry.mpardo.fr/docker-registry-explorer
   BRANCH_IMAGE_NAME: $BASE_IMAGE_NAME:${{ github.ref_name }}
   COMMIT_IMAGE_NAME: $BASE_IMAGE_NAME:${{ github.sha }}
 
@@ -14,11 +14,12 @@ jobs:
           toolchain: ${{ vars.RUST_VERSION }}
       - run: cargo build --release
       - name: Docker login
-        run: echo $REGISTRY_PASSWORD | docker login -u github $REGISTRY_HOST --password-stdin
+        run: echo $REGISTRY_PASSWORD | docker login -u $REGISTRY_USER $REGISTRY_HOST --password-stdin
         shell: bash
         env:
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
           REGISTRY_HOST: ${{ vars.REGISTRY_HOST }}
+          REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
       - run: docker build . -t ${{ env.COMMIT_IMAGE_NAME }} -t ${{ env.BRANCH_IMAGE_NAME }}
       - run: docker push ${{ env.COMMIT_IMAGE_NAME }}
       - run: docker push ${{ env.BRANCH_IMAGE_NAME }}
@@ -28,4 +29,5 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - name: Trigger coolify rolling update
-        run: 'curl -X GET -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" https://admin.mpardo.me/api/v1/deploy?uuid=${{ secrets.COOLIFY_APP_ID }}&force=false'
+        run: 'curl -X GET -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" ${{ secrets.COOLIFY_HOST }}/api/v1/deploy?uuid=${{ secrets.COOLIFY_APP_ID }}&force=false'
+        shell: bash
