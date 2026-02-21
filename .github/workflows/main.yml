@@ -1,6 +1,6 @@
 on: push
 env:
-  BASE_IMAGE_NAME: registry.mpardo.fr/docker-registry-explorer
+  BASE_IMAGE_NAME: ${{ vars.REGISTRY_HOST }}/docker-registry-explorer
   BRANCH_IMAGE_NAME: $BASE_IMAGE_NAME:${{ github.ref_name }}
   COMMIT_IMAGE_NAME: $BASE_IMAGE_NAME:${{ github.sha }}
 
