@@ -22,7 +22,7 @@ pub mod handler {
         extract::{Path, Query, State},
         response::Redirect,
     };
-    use joy_error::ResultLogExt;
+    use joy_error::log::ResultLogExt;
     use maud::Markup;
 
     use crate::{
@@ -43,6 +43,7 @@ pub mod handler {
     ) -> Result<Markup, Redirect> {
         service::get_image_info(registry_api_client, &image_name, pagination)
             .await
+            .error()
             .log_err()
             .map_or_else(
                 |_| Err(Redirect::to("/")),
@@ -68,7 +69,8 @@ pub mod handler {
 }
 
 pub mod service {
-    use joy_error::ResultLogExt;
+
+    use joy_error::log::ResultLogExt;
 
     use crate::{
         common::handler::PaginationQuery,
@@ -85,6 +87,7 @@ pub mod service {
         registry_api_client
             .delete_tag(image_name, digest)
             .await
+            .error()
             .log_err()?;
         Ok(())
     }
@@ -96,6 +99,7 @@ pub mod service {
         Ok(registry_api_client
             .tags(image_name)
             .await
+            .error()
             .log_err()?
             .tags
             .unwrap_or_default())
@@ -108,7 +112,7 @@ pub mod service {
     ) -> ServiceResult<ImageInfo> {
         let tags = get_image_tags(&registry_api_client, image_name).await?;
         let tags = pagination.into_paginated(15, &tags)?;
-        let tags = tags
+        let mut tags = tags
             .map(|tag| async {
                 let digest_response = registry_api_client.manifest(image_name, &tag).await?;
                 let tag = match digest_response {
@@ -121,6 +125,18 @@ pub mod service {
                         created: Some(created),
                         created_since: Some(chrono::Utc::now() - created),
                         architecture: Some(architecture),
+                        error: false,
+                        name: tag,
+                    },
+                    registry::dto::TagManifest::MultiArch {
+                        digest,
+                        architectures,
+                        created,
+                    } => Tag {
+                        digest,
+                        created,
+                        created_since: created.map(|c| chrono::Utc::now() - c),
+                        architecture: Some(architectures.join(", ")),
                         error: false,
                         name: tag,
                     },
@@ -138,6 +154,7 @@ pub mod service {
             .into_future()
             .await
             .into_result()?;
+        tags.data.sort_by(|a, b| b.created.cmp(&a.created));
 
         Ok(ImageInfo { tags })
     }

@@ -1,6 +1,6 @@
 [package]
 name = "docker-registry-explorer"
-version = "0.1.5"
+version = "0.2.0"
 edition = "2024"
 
 [dependencies]
@@ -18,10 +18,10 @@ reqwest = { version = "0", default-features = false, features = [
 ] }
 anyhow = "1"
 serde = { version = "1", features = ["derive"] }
-joy-error = { git = "https://github.com/sub07/rust-utils", version = "0.3.0", features = [
+joy-error = { git = "https://github.com/sub07/rust-utils", rev = "a7103d4dacf67412b9e85678581b1387649a2897", features = [
     "tracing-crate",
 ] }
-joy-macro = { git = "https://github.com/sub07/rust-utils", version = "0.3.6" }
+joy-macro = { git = "https://github.com/sub07/rust-utils", rev = "a7103d4dacf67412b9e85678581b1387649a2897" }
 futures = "0"
 serde_json = "1"
 chrono = "0"

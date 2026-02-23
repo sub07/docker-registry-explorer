@@ -46,7 +46,7 @@ pub mod handler {
 
 pub mod service {
     use itertools::Itertools;
-    use joy_error::ResultLogExt;
+    use joy_error::log::ResultLogExt;
 
     use crate::{
         error::service::ServiceResult,
@@ -58,7 +58,11 @@ pub mod service {
         registry_api_client: registry::api::Client,
         image_name: &str,
     ) -> ServiceResult<()> {
-        let tags = registry_api_client.tags(image_name).await.log_err()?;
+        let tags = registry_api_client
+            .tags(image_name)
+            .await
+            .error()
+            .log_err()?;
         if let Some(tags) = tags.tags {
             let digests = futures::future::join_all(
                 tags.iter()
@@ -74,6 +78,7 @@ pub mod service {
                 registry_api_client
                     .delete_tag(image_name, &digest)
                     .await
+                    .error()
                     .log_err()?;
             }
         }
@@ -84,7 +89,12 @@ pub mod service {
     pub async fn get_images(
         registry_api_client: registry::api::Client,
     ) -> ServiceResult<Vec<Image>> {
-        let images = registry_api_client.catalog().await.log_err()?.repositories;
+        let images = registry_api_client
+            .catalog()
+            .await
+            .error()
+            .log_err()?
+            .repositories;
 
         let tag_counts = futures::future::join_all(
             images
@@ -94,6 +104,7 @@ pub mod service {
         .await
         .into_iter()
         .collect::<anyhow::Result<Vec<_>>>()
+        .error()
         .log_err()?;
 
         let images = images

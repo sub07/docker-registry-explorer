@@ -195,7 +195,7 @@ pub mod view {
                     }
 
                     form .my-2 .mx-auto .d-flex .flex-column .gap-2 .col-3 .justify-content-center .align-items-end method="post" action=(authenticate_action) {
-                        input .form-control type="text" name="username" autofocus[username.is_none()] value=[username.as_deref()] placeholder="Username";
+                        input .form-control type="text" name="username" autofocus[username.is_none()] value=[username] placeholder="Username";
                         input .form-control autofocus[username.is_some()] type="password" name="password" placeholder="Password";
                         button .min-content .btn .btn-primary type="submit" {
                             "Login"
