@@ -29,5 +29,5 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - name: Trigger coolify rolling update
-        run: 'curl -X GET -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" ${{ secrets.COOLIFY_HOST }}/api/v1/deploy?uuid=${{ secrets.COOLIFY_APP_ID }}&force=false'
+        run: 'curl -X GET -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" ${{ vars.COOLIFY_HOST }}/api/v1/deploy?uuid=${{ secrets.COOLIFY_APP_ID }}&force=false'
         shell: bash
